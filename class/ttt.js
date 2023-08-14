@@ -1,11 +1,14 @@
 const Screen = require("./screen");
 const Cursor = require("./cursor");
+const ComputerPlayer = require('./computer-player');
 
 class TTT {
 
   constructor() {
 
     this.playerTurn = "O";
+
+    this.ai = false;
 
     this.grid = [[' ',' ',' '],
                  [' ',' ',' '],
@@ -24,6 +27,7 @@ class TTT {
     Screen.addCommand('r', 'move cursor right', this.cursor.right);
     Screen.addCommand('l', 'move cursor left', this.cursor.left);
     Screen.addCommand('m', 'mark the current position', this.putMark);
+    Screen.addCommand('c', 'play against the computer AI', this.computerAI);
 
     this.cursor.setBackgroundColor();
     Screen.render();
@@ -34,6 +38,22 @@ class TTT {
     console.log("TEST COMMAND");
   } */
 
+  computerAI = () => {
+    this.ai = true;
+
+    if (this.playerTurn === 'X') {
+      let cpuMove = ComputerPlayer.getSmartMove(this.grid, 'X');
+      this.grid[cpuMove.row][cpuMove.col] = 'X';
+      Screen.setGrid(cpuMove.row, cpuMove.col, 'X');
+      this.playerTurn = this.playerTurn === 'O' ? 'X' : 'O';
+    }
+
+    const gameState = TTT.checkWin(this.grid);
+    if (gameState) {
+      TTT.endGame(gameState);
+    }
+  }
+
   putMark = () => {
     Screen.setGrid(this.cursor.row, this.cursor.col, this.playerTurn);
     this.grid[this.cursor.row][this.cursor.col] = this.playerTurn;
@@ -43,6 +63,10 @@ class TTT {
     const gameState = TTT.checkWin(this.grid);
     if (gameState) {
       TTT.endGame(gameState);
+    }
+
+    if (this.ai) {
+      this.computerAI();
     }
   }
 
